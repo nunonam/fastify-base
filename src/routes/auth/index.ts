@@ -14,46 +14,53 @@ interface ErrorResponse {
   error: string
 }
 
+// Login Request Body Schema
+const loginBodySchema = {
+  type: 'object',
+  required: ['id', 'password'],
+  properties: {
+    id: {
+      type: 'string',
+      description: 'User ID'
+    },
+    password: {
+      type: 'string',
+      description: 'Password',
+      minLength: 6
+    }
+  }
+} as const
+
+// Login Response Schema
+const loginResponseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      accessToken: {
+        type: 'string',
+        description: 'Access Token'
+      },
+      refreshToken: {
+        type: 'string',
+        description: 'Refresh Token'
+      }
+    }
+  }
+} as const
+
+// Login Endpoint Schema
+const loginSchema = {
+  tags: ['auth'],
+  summary: 'Login',
+  description: 'User Login',
+  body: loginBodySchema,
+  response: loginResponseSchema
+} as const
+
 const auth: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.post<{ Body: LoginBody; Reply: LoginResponse | ErrorResponse }>(
     '/login',
-    {
-      schema: {
-        tags: ['auth'],
-        summary: 'Login',
-        description: 'User Login',
-        body: {
-          type: 'object',
-          required: ['id', 'password'],
-          properties: {
-            id: {
-              type: 'string',
-              description: 'User ID'
-            },
-            password: {
-              type: 'string',
-              description: 'Password',
-              minLength: 6
-            }
-          }
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              accessToken: {
-                type: 'string',
-                description: 'Access Token'
-              },
-              refreshToken: {
-                type: 'string',
-                description: 'Refresh Token'
-              }
-            }
-          }
-        }
-      } as const
-    },
+    { schema: loginSchema },
     async function (request, reply) {
       const { id } = request.body
 
